@@ -1,0 +1,35 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #dedede;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.app-container {
+    display: flex;
+    gap: 20px;
+    min-height: calc(100vh - 40px);
+    align-items: stretch;
+}
+
+#sidebar-container {
+    width: 280px;
+    flex-shrink: 0;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+    background: #f8f7fa;
+    border-radius: 28px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+

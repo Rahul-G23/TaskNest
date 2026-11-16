@@ -1,0 +1,84 @@
+<section class="analytics-section">
+
+    <!-- Productivity Analytics -->
+    <div class="analytics-card">
+
+        <div class="analytics-header">
+            <h2>Productivity <span>Analytics</span></h2>
+        </div>
+
+        <div class="analytics-content">
+
+            <div class="analytics-summary">
+                <h3>
+                    <span id="analyticsCompleted">0</span>
+                    <span class="analytics-divider">/</span>
+                    <span id="analyticsTotal">0</span>
+                </h3>
+
+                <p>Completed Tasks</p>
+
+                <div class="completion-label">
+                    <span id="completionPercentage">0%</span>
+                    <span>Completion</span>
+                </div>
+
+            </div>
+
+            <div class="chart-container">
+                <canvas id="productivityChart"></canvas>
+            </div>
+
+        </div>
+
+        <div class="chart-days">
+            <span>Mon</span>
+            <span>Tue</span>
+            <span>Wed</span>
+            <span>Thu</span>
+            <span>Fri</span>
+            <span>Sat</span>
+            <span>Sun</span>
+        </div>
+
+    </div>
+
+
+    <!-- Upcoming Tasks -->
+    <div class="upcoming-card">
+
+        <div class="upcoming-header">
+
+            <div class="upcoming-icon">◷</div>
+
+            <div class="upcoming-heading">
+                <h3>Upcoming</h3>
+                <p>Tasks</p>
+            </div>
+
+            <div class="upcoming-divider"></div>
+
+            <div class="upcoming-date">
+                <p>Next Due</p>
+                <span id="upcomingDate">No tasks</span>
+            </div>
+
+        </div>
+
+        <div class="upcoming-task-content">
+
+            <h2 id="upcomingTaskTitle">You're all caught up!</h2>
+
+            <p id="upcomingTaskDescription">
+                Add a task to see your upcoming schedule here.
+            </p>
+
+        </div>
+
+        <button class="upcoming-button" id="upcomingViewBtn">
+            View Tasks
+        </button>
+
+    </div>
+
+</section>
