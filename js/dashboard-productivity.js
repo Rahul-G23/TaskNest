@@ -1,4 +1,9 @@
-// Dashboard Productivity Component
+// ========================================
+// TaskNest - Dashboard Productivity
+// ========================================
+
+
+// Load Dashboard Productivity Component
 
 async function loadDashboardProductivity() {
 
@@ -18,6 +23,12 @@ async function loadDashboardProductivity() {
 
         initializeCategoryButton();
 
+        // Load category statistics
+        updateCategoryStats();
+
+        // Listen for task changes
+        window.addEventListener("tasksUpdated", updateCategoryStats);
+
     } catch (error) {
 
         console.error("Productivity loading error:", error);
@@ -27,7 +38,57 @@ async function loadDashboardProductivity() {
 }
 
 
+// ========================================
+// Update Task Category Statistics
+// ========================================
+
+function updateCategoryStats() {
+
+    const tasks = getTasks();
+
+    const categories = ["Work", "Personal", "Study"];
+
+    categories.forEach(category => {
+
+        // Get tasks belonging to this category
+        const categoryTasks = tasks.filter(
+            task => task.category.toLowerCase() === category.toLowerCase()
+        );
+
+        const totalTasks = categoryTasks.length;
+
+        // Count completed tasks
+        const completedTasks = categoryTasks.filter(
+            task => task.status === "completed"
+        ).length;
+
+        // Calculate completion percentage
+        const percentage = totalTasks > 0
+            ? Math.round((completedTasks / totalTasks) * 100)
+            : 0;
+
+
+        // Convert category name into lowercase
+        const key = category.toLowerCase();
+
+
+        // Update task count
+        document.getElementById(`${key}TaskCount`).textContent = totalTasks;
+
+        // Update percentage
+        document.getElementById(`${key}Percentage`).textContent = `${percentage}%`;
+
+        // Update progress bar
+        document.getElementById(`${key}Progress`).style.width = `${percentage}%`;
+
+    });
+
+}
+
+
+// ========================================
 // Productivity Timer
+// ========================================
 
 function initializeProductivityTimer() {
 
@@ -41,7 +102,8 @@ function initializeProductivityTimer() {
     let elapsedSeconds = 0;
     let timerInterval = null;
 
-    // Convert seconds into HH:MM:SS
+
+    // Format seconds into HH:MM:SS
     function formatTime(seconds) {
 
         const hours = Math.floor(seconds / 3600);
@@ -117,7 +179,9 @@ function initializeProductivityTimer() {
 }
 
 
+// ========================================
 // Category Button
+// ========================================
 
 function initializeCategoryButton() {
 
@@ -131,5 +195,7 @@ function initializeCategoryButton() {
 
 }
 
+
+// Start Dashboard Productivity
 
 loadDashboardProductivity();
