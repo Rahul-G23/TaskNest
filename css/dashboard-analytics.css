@@ -1,3 +1,7 @@
+/* ========================================
+   TaskNest - Dashboard Analytics
+======================================== */
+
 /* Analytics Section */
 
 .analytics-section {
@@ -7,6 +11,7 @@
     margin: 0 15px;
     width: calc(100% - 30px);
 }
+
 
 /* Productivity Analytics Card */
 
@@ -87,7 +92,87 @@
     font-weight: 600;
 }
 
-/* Upcoming Tasks Card */
+
+/* ========================================
+   Weekly Productivity Summary
+======================================== */
+
+.weekly-summary {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #f0eaf7;
+}
+
+.weekly-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 17px;
+}
+
+.weekly-summary-header h3 {
+    color: #32105e;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.weekly-summary-header span {
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #f2edff;
+    color: #873bd8;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.weekly-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.weekly-stat {
+    padding: 15px 12px;
+    background: #faf8ff;
+    border: 1px solid #f0eafa;
+    border-radius: 13px;
+    transition: 0.2s ease;
+}
+
+.weekly-stat:hover {
+    background: #f4efff;
+    border-color: #dfd0fa;
+    transform: translateY(-2px);
+}
+
+.weekly-stat p {
+    margin: 0 0 10px;
+    color: #898398;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.weekly-stat h2 {
+    margin: 0;
+    color: #873bd8;
+    font-size: 23px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+#mostProductiveDay {
+    font-size: 19px;
+}
+
+#weeklyComparison {
+    font-size: 20px;
+}
+
+
+/* ========================================
+   Upcoming Tasks Card
+======================================== */
 
 .upcoming-card {
     background: #ffffff;
@@ -181,7 +266,18 @@
     box-shadow: 0 4px 12px rgba(100, 30, 160, 0.2);
 }
 
-/* Responsive */
+
+/* ========================================
+   Responsive Design
+======================================== */
+
+@media (max-width: 1100px) {
+
+    .weekly-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+}
 
 @media (max-width: 950px) {
 
@@ -214,4 +310,18 @@
         flex-wrap: wrap;
     }
 
+    .weekly-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .weekly-stat {
+        padding: 13px 10px;
+    }
+
+    .weekly-stat h2 {
+        font-size: 20px;
+    }
+
 }
+
