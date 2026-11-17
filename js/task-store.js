@@ -1,12 +1,33 @@
+// ========================================
 // TaskNest - Central Task Storage
+// ========================================
 
-const TASK_STORAGE_KEY = "tasknest_tasks";
+const BASE_TASK_STORAGE_KEY = "tasknest_tasks";
 
 
-// Get all saved tasks
+// Resolve storage key scoped to the currently logged-in user
+function getTaskStorageKey() {
+    try {
+        const rawUser = localStorage.getItem("tasknest_current_user");
+        if (rawUser) {
+            const user = JSON.parse(rawUser);
+            if (user && user.email) {
+                return `${BASE_TASK_STORAGE_KEY}_${user.email.trim().toLowerCase()}`;
+            }
+        }
+    } catch (error) {
+        console.error("Error resolving user storage key:", error);
+    }
+
+    return BASE_TASK_STORAGE_KEY;
+}
+
+
+// Get all saved tasks for the active user
 function getTasks() {
     try {
-        return JSON.parse(localStorage.getItem(TASK_STORAGE_KEY)) || [];
+        const storageKey = getTaskStorageKey();
+        return JSON.parse(localStorage.getItem(storageKey)) || [];
     } catch (error) {
         console.error("Error retrieving tasks:", error);
         return [];
@@ -16,7 +37,8 @@ function getTasks() {
 
 // Save tasks and notify other components
 function saveTasks(tasks) {
-    localStorage.setItem(TASK_STORAGE_KEY, JSON.stringify(tasks));
+    const storageKey = getTaskStorageKey();
+    localStorage.setItem(storageKey, JSON.stringify(tasks));
 
     window.dispatchEvent(new CustomEvent("tasksUpdated"));
 }
