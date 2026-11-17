@@ -3,6 +3,7 @@
 // ========================================
 
 let productivityChartInstance = null;
+let categoryChartInstance = null;
 
 
 // ========================================
@@ -24,13 +25,20 @@ async function loadDashboardAnalytics() {
         container.innerHTML = await response.text();
 
         initializeProductivityChart();
+        initializeCategoryChart();
+
         updateAnalyticsStats();
         updateUpcomingTasks();
         updateWeeklySummary();
+        updateCategoryChart();
+        updateCategoryBreakdown();
 
         window.addEventListener("tasksUpdated", () => {
 
             updateProductivityChart();
+            updateCategoryChart();
+            updateCategoryBreakdown();
+
             updateAnalyticsStats();
             updateUpcomingTasks();
             updateWeeklySummary();
@@ -49,8 +57,6 @@ async function loadDashboardAnalytics() {
 // ========================================
 // Date Helper Functions
 // ========================================
-
-// Get local date in YYYY-MM-DD format
 
 function getLocalDateString(date) {
 
@@ -271,7 +277,7 @@ function initializeProductivityChart() {
 }
 
 
-// Update chart automatically
+// Update productivity chart
 
 function updateProductivityChart() {
 
@@ -418,11 +424,8 @@ function updateWeeklySummary() {
         }).length;
 
         return {
-
             day: day.label,
-
             count: count
-
         };
 
     });
@@ -498,6 +501,253 @@ function updateWeeklySummary() {
 
     document.getElementById("weeklyComparison").textContent =
         comparisonText;
+
+}
+
+
+// ========================================
+// Category-wise Productivity Chart
+// ========================================
+
+// Get completed task counts by category
+
+function getCategoryCompletedTasks() {
+
+    const tasks = getTasks();
+
+    const categories = ["Work", "Personal", "Study"];
+
+    return categories.map(category => {
+
+        return tasks.filter(task => {
+
+            return task.status === "completed" &&
+                task.category &&
+                task.category.toLowerCase() === category.toLowerCase();
+
+        }).length;
+
+    });
+
+}
+
+
+// Get completed, total, and percentage stats per category
+
+function getCategoryBreakdownData() {
+
+    const tasks = getTasks();
+
+    const categories = [
+        { name: "Work", prefix: "work" },
+        { name: "Personal", prefix: "personal" },
+        { name: "Study", prefix: "study" }
+    ];
+
+    return categories.map(category => {
+
+        const categoryTasks = tasks.filter(task =>
+            task.category &&
+            task.category.toLowerCase() === category.name.toLowerCase()
+        );
+
+        const total = categoryTasks.length;
+
+        const completed = categoryTasks.filter(
+            task => task.status === "completed"
+        ).length;
+
+        const percentage = total > 0
+            ? Math.round((completed / total) * 100)
+            : 0;
+
+        return {
+            name: category.name,
+            prefix: category.prefix,
+            completed,
+            total,
+            percentage
+        };
+
+    });
+
+}
+
+
+// Update category breakdown progress bars and top category badge
+
+function updateCategoryBreakdown() {
+
+    const breakdownData = getCategoryBreakdownData();
+
+    breakdownData.forEach(item => {
+
+        const countEl = document.getElementById(`${item.prefix}Count`);
+        const percentageEl = document.getElementById(`${item.prefix}Percentage`);
+        const progressEl = document.getElementById(`${item.prefix}Progress`);
+
+        if (countEl) {
+            countEl.textContent = `${item.completed} / ${item.total}`;
+        }
+
+        if (percentageEl) {
+            percentageEl.textContent = `${item.percentage}%`;
+        }
+
+        if (progressEl) {
+            progressEl.style.width = `${item.percentage}%`;
+        }
+
+    });
+
+    const badgeEl = document.getElementById("topCategoryBadge");
+
+    if (badgeEl) {
+
+        const topCategory = breakdownData.reduce((best, current) => {
+
+            if (current.completed > best.completed) {
+                return current;
+            }
+
+            if (current.completed === best.completed && current.percentage > best.percentage) {
+                return current;
+            }
+
+            return best;
+
+        }, { name: "--", completed: 0, percentage: 0 });
+
+        badgeEl.textContent = topCategory.completed > 0
+            ? `Top: ${topCategory.name} (${topCategory.percentage}%)`
+            : "Top: --";
+
+    }
+
+}
+
+
+// Initialize category doughnut chart
+
+function initializeCategoryChart() {
+
+    const canvas = document.getElementById("categoryChart");
+
+    if (!canvas) return;
+
+    if (typeof Chart === "undefined") {
+
+        console.error("Chart.js is not loaded");
+
+        return;
+
+    }
+
+    if (categoryChartInstance) {
+        categoryChartInstance.destroy();
+    }
+
+    categoryChartInstance = new Chart(canvas, {
+
+        type: "doughnut",
+
+        data: {
+
+            labels: ["Work", "Personal", "Study"],
+
+            datasets: [{
+
+                label: "Completed Tasks",
+
+                data: getCategoryCompletedTasks(),
+
+                backgroundColor: [
+                    "#7655e8",
+                    "#b47bea",
+                    "#63b8a5"
+                ],
+
+                borderColor: "#ffffff",
+
+                borderWidth: 3,
+
+                hoverOffset: 8
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            cutout: "65%",
+
+            plugins: {
+
+                legend: {
+
+                    display: true,
+
+                    position: "bottom",
+
+                    labels: {
+
+                        usePointStyle: true,
+
+                        padding: 20,
+
+                        font: {
+                            size: 12
+                        }
+
+                    }
+
+                },
+
+                tooltip: {
+
+                    callbacks: {
+
+                        label: function(context) {
+
+                            const count = context.parsed;
+
+                            return ` ${context.label}: ${count} completed`;
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    });
+
+}
+
+
+// Update category chart automatically
+
+function updateCategoryChart() {
+
+    if (!categoryChartInstance) {
+
+        initializeCategoryChart();
+
+        return;
+
+    }
+
+    categoryChartInstance.data.datasets[0].data =
+        getCategoryCompletedTasks();
+
+    categoryChartInstance.update();
 
 }
 

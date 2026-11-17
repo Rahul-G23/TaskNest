@@ -12,7 +12,6 @@
     width: calc(100% - 30px);
 }
 
-
 /* Productivity Analytics Card */
 
 .analytics-card {
@@ -171,6 +170,165 @@
 
 
 /* ========================================
+   Category-wise Productivity
+======================================== */
+
+.category-analytics {
+    margin-top: 30px;
+    padding-top: 22px;
+    border-top: 1px solid #f0eaf7;
+}
+
+.category-analytics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.category-analytics-header h3 {
+    color: #32105e;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.category-analytics-header p {
+    color: #999;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.top-category-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #f2edff;
+    color: #873bd8;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.category-analytics-body {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    align-items: center;
+    gap: 24px;
+}
+
+.category-chart-container {
+    position: relative;
+    width: 100%;
+    height: 230px;
+    max-width: 280px;
+    margin: 0 auto;
+}
+
+.category-chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.category-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.category-item {
+    padding: 13px 15px;
+    background: #faf8ff;
+    border: 1px solid #f0eafa;
+    border-radius: 14px;
+    transition: 0.2s ease;
+}
+
+.category-item:hover {
+    background: #f4efff;
+    border-color: #dfd0fa;
+    transform: translateY(-2px);
+}
+
+.category-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 9px;
+}
+
+.category-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #32105e;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.category-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.work-dot {
+    background: #7655e8;
+}
+
+.personal-dot {
+    background: #b47bea;
+}
+
+.study-dot {
+    background: #63b8a5;
+}
+
+.category-metrics {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #898398;
+}
+
+.category-metrics strong {
+    color: #32105e;
+    font-size: 13px;
+    font-weight: 700;
+    min-width: 34px;
+    text-align: right;
+}
+
+.category-progress-bar {
+    width: 100%;
+    height: 7px;
+    background: #ebe3fa;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.category-progress-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    transition: width 0.35s ease;
+}
+
+.work-fill {
+    background: #7655e8;
+}
+
+.personal-fill {
+    background: #b47bea;
+}
+
+.study-fill {
+    background: #63b8a5;
+}
+
+
+/* ========================================
    Upcoming Tasks Card
 ======================================== */
 
@@ -287,6 +445,14 @@
 
 }
 
+@media (max-width: 768px) {
+
+    .category-analytics-body {
+        grid-template-columns: 1fr;
+    }
+
+}
+
 @media (max-width: 600px) {
 
     .analytics-content {
@@ -310,6 +476,11 @@
         flex-wrap: wrap;
     }
 
+    .category-analytics-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
     .weekly-summary-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 9px;
@@ -323,5 +494,8 @@
         font-size: 20px;
     }
 
-}
+    .category-chart-container {
+        height: 210px;
+    }
 
+}
