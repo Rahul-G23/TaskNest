@@ -192,6 +192,17 @@ function initializeTaskForm() {
 
         closeTaskModal();
 
+        // Dispatch task data
+
+        window.dispatchEvent(
+            new CustomEvent("taskFormSubmitted", {
+                detail: taskData
+            })
+        );
+
+        closeTaskModal();
+
     });
+
 
 }
