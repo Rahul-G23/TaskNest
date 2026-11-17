@@ -3,8 +3,26 @@
 // ========================================
 
 
+// Resolve active search query from header input or URL
+function getActiveTaskSearchQuery() {
+    const headerInput = document.getElementById("globalSearch");
+    if (headerInput && typeof headerInput.value === "string") {
+        return headerInput.value.trim().toLowerCase();
+    }
+
+    if (typeof window.taskNestSearchQuery === "string") {
+        return window.taskNestSearchQuery.trim().toLowerCase();
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    return (params.get("search") || "").trim().toLowerCase();
+}
+
+
 // Format due date
 function formatTaskDate(dateString) {
+    if (!dateString) return "No due date";
+
     const date = new Date(dateString + "T00:00:00");
 
     return date.toLocaleDateString("en-IN", {
@@ -17,7 +35,7 @@ function formatTaskDate(dateString) {
 
 // Check whether a task is overdue
 function isTaskOverdue(task) {
-    if (task.status === "completed") return false;
+    if (task.status === "completed" || !task.dueDate) return false;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -42,7 +60,7 @@ function sortTasks(tasks) {
 
         // Sort active tasks by due date
         if (a.status === "active" && b.status === "active") {
-            const dateComparison = a.dueDate.localeCompare(b.dueDate);
+            const dateComparison = (a.dueDate || "9999-12-31").localeCompare(b.dueDate || "9999-12-31");
 
             if (dateComparison !== 0) {
                 return dateComparison;
@@ -61,25 +79,49 @@ function sortTasks(tasks) {
 }
 
 
-// Display all tasks
+// Display all tasks (filtered by active search query if present)
 function renderTasks() {
     const taskList = document.getElementById("taskList");
 
     if (!taskList) return;
 
-    const tasks = getTasks();
+    const allTasks = getTasks();
+    const searchQuery = getActiveTaskSearchQuery();
 
-    updateTaskSummary(tasks);
+    // Summary cards always reflect the user's full workspace
+    updateTaskSummary(allTasks);
+
+    const filteredTasks = searchQuery
+        ? allTasks.filter(task => {
+            const haystack = [
+                task.title,
+                task.description,
+                task.category,
+                task.priority,
+                task.status
+            ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+
+            return haystack.includes(searchQuery);
+        })
+        : allTasks;
 
     const displayedCount = document.getElementById("displayedTaskCount");
 
     if (displayedCount) {
-        displayedCount.textContent =
-            `${tasks.length} ${tasks.length === 1 ? "Task" : "Tasks"}`;
+        if (searchQuery) {
+            displayedCount.textContent =
+                `${filteredTasks.length} of ${allTasks.length} Tasks`;
+        } else {
+            displayedCount.textContent =
+                `${allTasks.length} ${allTasks.length === 1 ? "Task" : "Tasks"}`;
+        }
     }
 
-    // Show empty state
-    if (tasks.length === 0) {
+    // Empty state when user has zero tasks at all
+    if (allTasks.length === 0) {
         taskList.innerHTML = `
             <div class="empty-task-state">
                 <div class="empty-task-icon">✓</div>
@@ -103,8 +145,44 @@ function renderTasks() {
         return;
     }
 
-    // Sort tasks before displaying
-    const sortedTasks = sortTasks(tasks);
+    // Empty state when search query matches zero tasks
+    if (filteredTasks.length === 0) {
+        taskList.innerHTML = `
+            <div class="empty-task-state">
+                <div class="empty-task-icon">⌕</div>
+
+                <h3>No matching tasks</h3>
+
+                <p>
+                    No tasks matched "<strong>${escapeTaskHTML(searchQuery)}</strong>".
+                </p>
+
+                <button id="clearSearchStateBtn">
+                    Clear Search
+                </button>
+            </div>
+        `;
+
+        document.getElementById("clearSearchStateBtn")
+            .addEventListener("click", () => {
+                const headerInput = document.getElementById("globalSearch");
+                if (headerInput) {
+                    headerInput.value = "";
+                }
+                window.taskNestSearchQuery = "";
+
+                if (window.location.search.includes("search=")) {
+                    window.history.replaceState({}, "", window.location.pathname);
+                }
+
+                renderTasks();
+            });
+
+        return;
+    }
+
+    // Sort filtered tasks before displaying
+    const sortedTasks = sortTasks(filteredTasks);
 
     // Display task cards
     taskList.innerHTML = sortedTasks.map(task => {
@@ -220,11 +298,20 @@ function toggleTaskStatus(taskId) {
 }
 
 
-// Delete a task after confirmation
+// Delete a task (respecting user's confirmDelete preference)
 function deleteTaskWithConfirmation(taskId) {
     const task = getTaskById(taskId);
 
     if (!task) return;
+
+    const prefs = typeof getUserTaskPreferences === "function"
+        ? getUserTaskPreferences()
+        : { confirmDelete: true };
+
+    if (!prefs.confirmDelete) {
+        deleteTask(taskId);
+        return;
+    }
 
     const confirmed = confirm(
         `Are you sure you want to delete "${task.title}"?`
@@ -275,5 +362,6 @@ function escapeTaskHTML(value) {
 }
 
 
-// Listen for task updates
+// Listen for task and global search updates
 window.addEventListener("tasksUpdated", renderTasks);
+window.addEventListener("globalSearchUpdated", renderTasks);

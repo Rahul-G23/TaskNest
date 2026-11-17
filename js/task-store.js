@@ -23,6 +23,44 @@ function getTaskStorageKey() {
 }
 
 
+// Resolve preferences storage key scoped to the currently logged-in user
+function getUserPreferencesStorageKey() {
+    try {
+        const rawUser = localStorage.getItem("tasknest_current_user");
+        if (rawUser) {
+            const user = JSON.parse(rawUser);
+            if (user && user.email) {
+                return `tasknest_prefs_${user.email.trim().toLowerCase()}`;
+            }
+        }
+    } catch (error) {
+        console.error("Error resolving user preferences key:", error);
+    }
+
+    return "tasknest_prefs";
+}
+
+
+// Get saved productivity preferences for the active user
+function getUserTaskPreferences() {
+    const defaults = {
+        defaultCategory: "Work",
+        defaultPriority: "Medium",
+        pomodoroMinutes: 25,
+        confirmDelete: true
+    };
+
+    try {
+        const raw = localStorage.getItem(getUserPreferencesStorageKey());
+        if (!raw) return defaults;
+        return { ...defaults, ...JSON.parse(raw) };
+    } catch (error) {
+        console.error("Error retrieving user preferences:", error);
+        return defaults;
+    }
+}
+
+
 // Get all saved tasks for the active user
 function getTasks() {
     try {
@@ -101,7 +139,6 @@ function updateTask(taskId, updatedData) {
         ...updatedData
     };
 
-    // Record when the task is completed
     if (
         updatedData.status === "completed" &&
         oldTask.status !== "completed"
@@ -109,7 +146,6 @@ function updateTask(taskId, updatedData) {
         updatedTask.completedAt = new Date().toISOString();
     }
 
-    // Clear completion time if the task becomes active again
     if (updatedData.status === "active") {
         updatedTask.completedAt = null;
     }

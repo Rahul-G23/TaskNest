@@ -1,93 +1,5 @@
 // ========================================
-// TaskNest - Dashboard Productivity
-// ========================================
-
-
-// Load Dashboard Productivity Component
-
-async function loadDashboardProductivity() {
-
-    const container = document.getElementById("productivity-container");
-
-    try {
-
-        const response = await fetch("../components/dashboard-productivity.html");
-
-        if (!response.ok) {
-            throw new Error("Unable to load productivity component");
-        }
-
-        container.innerHTML = await response.text();
-
-        initializeProductivityTimer();
-
-        initializeCategoryButton();
-
-        // Load category statistics
-        updateCategoryStats();
-
-        // Listen for task changes
-        window.addEventListener("tasksUpdated", updateCategoryStats);
-
-    } catch (error) {
-
-        console.error("Productivity loading error:", error);
-
-    }
-
-}
-
-
-// ========================================
-// Update Task Category Statistics
-// ========================================
-
-function updateCategoryStats() {
-
-    const tasks = getTasks();
-
-    const categories = ["Work", "Personal", "Study"];
-
-    categories.forEach(category => {
-
-        // Get tasks belonging to this category
-        const categoryTasks = tasks.filter(
-            task => task.category.toLowerCase() === category.toLowerCase()
-        );
-
-        const totalTasks = categoryTasks.length;
-
-        // Count completed tasks
-        const completedTasks = categoryTasks.filter(
-            task => task.status === "completed"
-        ).length;
-
-        // Calculate completion percentage
-        const percentage = totalTasks > 0
-            ? Math.round((completedTasks / totalTasks) * 100)
-            : 0;
-
-
-        // Convert category name into lowercase
-        const key = category.toLowerCase();
-
-
-        // Update task count
-        document.getElementById(`${key}TaskCount`).textContent = totalTasks;
-
-        // Update percentage
-        document.getElementById(`${key}Percentage`).textContent = `${percentage}%`;
-
-        // Update progress bar
-        document.getElementById(`${key}Progress`).style.width = `${percentage}%`;
-
-    });
-
-}
-
-
-// ========================================
-// Productivity Timer
+// Productivity Timer (Pomodoro Countdown)
 // ========================================
 
 function initializeProductivityTimer() {
@@ -99,24 +11,35 @@ function initializeProductivityTimer() {
     const pauseButton = document.getElementById("pauseTimer");
     const resetButton = document.getElementById("resetTimer");
 
-    let elapsedSeconds = 0;
+    function getConfiguredDurationSeconds() {
+        const prefs = typeof getUserTaskPreferences === "function"
+            ? getUserTaskPreferences()
+            : { pomodoroMinutes: 25 };
+
+        const minutes = Number(prefs.pomodoroMinutes) || 25;
+        return minutes * 60;
+    }
+
+    let remainingSeconds = getConfiguredDurationSeconds();
     let timerInterval = null;
 
 
-    // Format seconds into HH:MM:SS
+    // Format seconds into MM:SS (or HH:MM:SS if >= 60 min)
     function formatTime(seconds) {
 
         const hours = Math.floor(seconds / 3600);
-
         const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
 
-        const remainingSeconds = seconds % 60;
+        if (hours > 0) {
+            return [hours, minutes, secs]
+                .map(value => String(value).padStart(2, "0"))
+                .join(":");
+        }
 
-        return [
-            hours,
-            minutes,
-            remainingSeconds
-        ].map(value => String(value).padStart(2, "0")).join(":");
+        return [minutes, secs]
+            .map(value => String(value).padStart(2, "0"))
+            .join(":");
 
     }
 
@@ -124,9 +47,14 @@ function initializeProductivityTimer() {
     // Update timer display
     function updateDisplay() {
 
-        timerDisplay.textContent = formatTime(elapsedSeconds);
+        timerDisplay.textContent = formatTime(remainingSeconds);
 
     }
+
+
+    // Initialize display immediately with saved duration
+    updateDisplay();
+    timerStatus.textContent = `Ready for a ${Math.round(remainingSeconds / 60)} min focus session?`;
 
 
     // Start timer
@@ -134,13 +62,25 @@ function initializeProductivityTimer() {
 
         if (timerInterval !== null) return;
 
+        if (remainingSeconds <= 0) {
+            remainingSeconds = getConfiguredDurationSeconds();
+            updateDisplay();
+        }
+
         timerStatus.textContent = "Focus session in progress";
 
         timerInterval = setInterval(() => {
 
-            elapsedSeconds++;
+            if (remainingSeconds > 0) {
+                remainingSeconds--;
+                updateDisplay();
+            }
 
-            updateDisplay();
+            if (remainingSeconds <= 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                timerStatus.textContent = "Focus session complete! Great work.";
+            }
 
         }, 1000);
 
@@ -168,34 +108,12 @@ function initializeProductivityTimer() {
 
         timerInterval = null;
 
-        elapsedSeconds = 0;
+        remainingSeconds = getConfiguredDurationSeconds();
 
         updateDisplay();
 
-        timerStatus.textContent = "Ready to focus?";
+        timerStatus.textContent = `Ready for a ${Math.round(remainingSeconds / 60)} min focus session?`;
 
     });
 
 }
-
-
-// ========================================
-// Category Button
-// ========================================
-
-function initializeCategoryButton() {
-
-    const button = document.getElementById("addCategoryBtn");
-
-    button.addEventListener("click", () => {
-
-        alert("Custom categories will be available in a future update.");
-
-    });
-
-}
-
-
-// Start Dashboard Productivity
-
-loadDashboardProductivity();

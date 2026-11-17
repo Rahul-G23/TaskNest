@@ -33,6 +33,29 @@ async function loadTaskForm() {
 
 
 // ========================================
+// Apply Saved Default Category & Priority
+// ========================================
+
+function applySavedTaskFormDefaults() {
+
+    if (typeof getUserTaskPreferences !== "function") return;
+
+    const prefs = getUserTaskPreferences();
+    const categorySelect = document.getElementById("taskCategory");
+    const prioritySelect = document.getElementById("taskPriority");
+
+    if (categorySelect && prefs.defaultCategory) {
+        categorySelect.value = prefs.defaultCategory;
+    }
+
+    if (prioritySelect && prefs.defaultPriority) {
+        prioritySelect.value = prefs.defaultPriority;
+    }
+
+}
+
+
+// ========================================
 // Initialize Task Form
 // ========================================
 
@@ -51,6 +74,9 @@ function initializeTaskForm() {
 
     window.openTaskModal = function () {
 
+        form.reset();
+        applySavedTaskFormDefaults();
+
         overlay.classList.add("show");
 
         titleInput.focus();
@@ -65,6 +91,7 @@ function initializeTaskForm() {
         overlay.classList.remove("show");
 
         form.reset();
+        applySavedTaskFormDefaults();
 
         document.getElementById("taskFormHeading").textContent =
             "Create New Task";
